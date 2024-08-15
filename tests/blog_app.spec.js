@@ -15,7 +15,13 @@ describe('Blog app', () => {
 
   describe('Login', () => {
     test('succeeds with correct credentials', async ({ page }) => {
-      // ...
+      await page.getByRole('button', { name: 'log in' }).click()
+      await page.getByRole('button', { name: 'login' }).click()
+        await page.getByTestId('username').fill('mluukkai')
+        await page.getByTestId('password').fill('salainen')
+        await page.getByRole('button', { name: 'login' }).click()
+  
+        await expect(page.getByText('mluukkai logged in')).toBeVisible()
     })
 
     test('fails with wrong credentials', async ({ page }) => {

@@ -35,6 +35,12 @@ describe('Blog app', () => {
 
         // Ensure the error message is visible first
         await expect(errorMessage).toBeVisible();
+
+        // Check that the element has the correct CSS styles
+        await expect(errorMessage).toHaveCSS('border-style', 'solid');
+        await expect(errorMessage).toHaveCSS('color', 'rgb(255, 0, 0)'); // 'red' in RGB format
+
+        await expect(page.getByText('mluukkai logged in')).not.toBeVisible()
     })
   })
 })

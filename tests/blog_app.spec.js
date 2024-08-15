@@ -30,7 +30,7 @@ describe('Blog app', () => {
         await page.getByTestId('password').fill('salainen')
         await page.getByRole('button', { name: 'login' }).click()
   
-        await expect(page.getByText('mluukkai logged in')).toBeVisible()
+        await expect(page.getByText('Matti Luukkainen logged in')).toBeVisible()
     })
 
     test('fails with wrong credentials', async ({ page }) => {
@@ -49,7 +49,7 @@ describe('Blog app', () => {
         await expect(errorMessage).toHaveCSS('border-style', 'solid');
         await expect(errorMessage).toHaveCSS('color', 'rgb(255, 0, 0)'); // 'red' in RGB format
 
-        await expect(page.getByText('mluukkai logged in')).not.toBeVisible()
+        await expect(page.getByText('Matti Luukkainen logged in')).not.toBeVisible()
     })
   })
 })

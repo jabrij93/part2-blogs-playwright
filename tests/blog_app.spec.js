@@ -25,7 +25,16 @@ describe('Blog app', () => {
     })
 
     test('fails with wrong credentials', async ({ page }) => {
-      // ...
+      await page.getByRole('button', { name: 'log in' }).click()
+      await page.getByRole('button', { name: 'login' }).click()
+        await page.getByTestId('username').fill('mluukkai')
+        await page.getByTestId('password').fill('wrong')
+        await page.getByRole('button', { name: 'login' }).click()
+    
+        const errorMessage = page.getByText('wrong username or password');
+
+        // Ensure the error message is visible first
+        await expect(errorMessage).toBeVisible();
     })
   })
 })

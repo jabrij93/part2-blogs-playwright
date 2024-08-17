@@ -1,5 +1,5 @@
 const { test, expect, beforeEach, describe } = require('@playwright/test')
-const { loginWith } = require('./helper.cjs')
+const { loginWith, createBlog } = require('./helper.cjs')
 
 describe('Blog app', () => {
   beforeEach(async ({ page, request }) => {
@@ -60,7 +60,8 @@ describe('Blog app', () => {
     })
   
     test('a new blog can be created', async ({ page }) => {
-      // ...
+      await createBlog(page, 'a note created by playwright', 'jabs', 'www.consistency.com', '59')
+      await expect(page.getByText('added a note created by playwright by jabs')).toBeVisible()
     })
   })
 })

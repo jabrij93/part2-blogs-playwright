@@ -1,4 +1,5 @@
 const { test, expect, beforeEach, describe } = require('@playwright/test')
+const { loginWith } = require('./helper.cjs')
 
 describe('Blog app', () => {
   beforeEach(async ({ page, request }) => {
@@ -50,6 +51,16 @@ describe('Blog app', () => {
         await expect(errorMessage).toHaveCSS('color', 'rgb(255, 0, 0)'); // 'red' in RGB format
 
         await expect(page.getByText('Matti Luukkainen logged in')).not.toBeVisible()
+    })
+  })
+
+  describe.only('When logged in', () => {
+    beforeEach(async ({ page }) => {
+      await loginWith(page, 'mluukkai', 'salainen')
+    })
+  
+    test('a new blog can be created', async ({ page }) => {
+      // ...
     })
   })
 })

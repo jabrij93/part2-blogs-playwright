@@ -60,8 +60,8 @@ describe('Blog app', () => {
     })
   
     test('a new blog can be created', async ({ page }) => {
-      await createBlog(page, 'a note created by playwright', 'jabs', 'www.consistency.com', '59')
-      await expect(page.getByText('added a note created by playwright by jabs')).toBeVisible()
+      await createBlog(page, 'a note created by playwright3', 'jabs3', 'www.consistency_leads_to_conviction.com', '80')
+      await expect(page.getByText('added a note created by playwright3 by jabs3')).toBeVisible()
     })
   })
 })

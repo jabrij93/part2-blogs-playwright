@@ -57,11 +57,15 @@ describe('Blog app', () => {
   describe.only('When logged in', () => {
     beforeEach(async ({ page }) => {
       await loginWith(page, 'mluukkai', 'salainen')
+      await createBlog(page, 'a note created by playwright2', 'jabs2', 'www.consistency_leads_to_conviction.com', '70')
+      await createBlog(page, 'a note created by playwright3', 'jabs3', 'www.consistency_leads_to_conviction.com', '80')
     })
   
-    test('a new blog can be created', async ({ page }) => {
-      await createBlog(page, 'a note created by playwright3', 'jabs3', 'www.consistency_leads_to_conviction.com', '80')
-      await expect(page.getByText('added a note created by playwright3 by jabs3')).toBeVisible()
+    test('a blog can be liked', async ({ page }) => {
+      await page.getByText('a note created by playwright2')
+      await page.getByRole('button', { name: 'show' }).click()
+      await page.getByRole('button', { name: 'like' }).click()
+      await expect(page.getByText('72')).toBeVisible()
     })
   })
 })

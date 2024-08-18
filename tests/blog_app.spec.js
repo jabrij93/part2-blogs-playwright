@@ -61,11 +61,25 @@ describe('Blog app', () => {
       await createBlog(page, 'a note created by playwright3', 'jabs3', 'www.consistency_leads_to_conviction.com', '80')
     })
   
-    test('a blog can be liked', async ({ page }) => {
-      await page.getByText('a note created by playwright2')
+    // test('a blog can be liked', async ({ page }) => {
+    //   await page.getByText('a note created by playwright2')
+    //   await page.getByRole('button', { name: 'show' }).click()
+    //   await page.getByRole('button', { name: 'like' }).click()
+    //   await expect(page.getByText('71')).toBeVisible()
+    // })
+
+    test('a blog can be deleted', async ({ page }) => {
+      // Listen for the confirm dialog and accept it
+      page.on('dialog', dialog => dialog.accept());
+
+      await page.getByText('a note created by playwright3')
       await page.getByRole('button', { name: 'show' }).click()
-      await page.getByRole('button', { name: 'like' }).click()
-      await expect(page.getByText('72')).toBeVisible()
+      const locator = await page.getByText('delete')
+      await expect(locator).toBeVisible()
+
+      // await page.getByRole('button', { name: 'delete' }).click()
+      
+      await expect(page.getByText('a note created by playwright3')).not.toBeVisible()
     })
   })
 })

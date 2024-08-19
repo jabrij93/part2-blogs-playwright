@@ -72,17 +72,23 @@ describe('Blog app', () => {
     // })
 
     test('a blog can be deleted', async ({ page }) => {
-      // Listen for the confirm dialog and accept it
       page.on('dialog', dialog => dialog.accept());
 
-      await page.getByText('a note created by playwright3')
-      await page.getByRole('button', { name: 'show' }).click()
-      const locator = await page.getByText('delete')
-      await expect(locator).toBeVisible()
+      await page.getByText('a note created by playwright3');
+      await page.getByRole('button', { name: 'show' }).click();
 
-      // await page.getByRole('button', { name: 'delete' }).click()
+      await page.pause();  // This will pause the test and open the Playwright inspector
+
+      // Check logged-in user and blog user in the console
+    const loggedInUser = await page.evaluate(() => localStorage.getItem('loggedBlogAppUser'));
+    console.log('Logged in User:', JSON.parse(loggedInUser));
       
-      await expect(page.getByText('a note created by playwright3')).not.toBeVisible()
+      const locator = await page.getByText('delete');
+      await expect(locator).toBeVisible();
+
+      await page.getByRole('button', { name: 'delete' }).click();
+
+      await expect(page.getByText('a note created by playwright3')).not.toBeVisible();
     })
   })
 })

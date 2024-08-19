@@ -74,21 +74,33 @@ describe('Blog app', () => {
     test('a blog can be deleted', async ({ page }) => {
       page.on('dialog', dialog => dialog.accept());
 
-      await page.getByText('a note created by playwright3');
-      await page.getByRole('button', { name: 'show' }).click();
-
-      await page.pause();  // This will pause the test and open the Playwright inspector
-
-      // Check logged-in user and blog user in the console
-    const loggedInUser = await page.evaluate(() => localStorage.getItem('loggedBlogAppUser'));
-    console.log('Logged in User:', JSON.parse(loggedInUser));
+      // Wait for the specific blog title to be visible
+      const blogTitleLocator = page.locator('p', { hasText: 'a note created by playwright3' });
       
-      const locator = await page.getByText('delete');
-      await expect(locator).toBeVisible();
+      // Ensure the blog title is found
+      await expect(blogTitleLocator).toBeVisible();
+      
+      // Find the toggle button associated with this blog
+      const toggleButtonLocator = blogTitleLocator.locator('xpath=following-sibling::button');
+      
+      // Click the 'show' button to reveal the blog details
+      await toggleButtonLocator.click();
+      
+      // Find the delete button within the visible blog content
+      const deleteButtonLocator = page.locator('button', { hasText: 'delete' });
+      
+      // Check how many delete buttons are present in the DOM
+      const isPresent = await deleteButtonLocator.count();
+      console.log('Delete button count:', isPresent);  // Logs the number of delete buttons found
 
-      await page.getByRole('button', { name: 'delete' }).click();
-
-      await expect(page.getByText('a note created by playwright3')).not.toBeVisible();
+      // Ensure the delete button is visible
+      await expect(deleteButtonLocator).toBeVisible();
+      
+      // Click the delete button
+      await deleteButtonLocator.click();
+      
+      // Ensure the blog is no longer visible after deletion
+      await expect(page.locator('p', { hasText: 'a note created by playwright3' })).not.toBeVisible();
     })
   })
 })

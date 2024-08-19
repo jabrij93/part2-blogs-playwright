@@ -13,6 +13,20 @@ const createBlog = async (page, title, author, url, likes) => {
     await page.getByTestId('url').fill(url)
     await page.getByTestId('likes').fill(likes)
     await page.getByRole('button', { name: 'add' }).click()
+
+    // Debugging: Check what's in localStorage
+    const blogsString = await page.evaluate(() => localStorage.getItem('blogs'));
+    console.log('Blogs in localStorage:', blogsString); // This will output to Playwright's console
+
+    // After creation, manually set the user field (if necessary)
+    await page.evaluate(() => {
+      const blogs = JSON.parse(localStorage.getItem('blogs') || '[]');
+      const updatedBlogs = blogs.map(blog => ({
+        ...blog,
+        user: { username: 'mluukkai' }, // Hard-code the user for test purposes
+      }));
+      localStorage.setItem('blogs', JSON.stringify(updatedBlogs));
+    });
 }
 
 

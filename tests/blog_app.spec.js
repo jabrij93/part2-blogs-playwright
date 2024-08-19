@@ -59,6 +59,9 @@ describe('Blog app', () => {
       await loginWith(page, 'mluukkai', 'salainen')
       await createBlog(page, 'a note created by playwright2', 'jabs2', 'www.consistency_leads_to_conviction.com', '70')
       await createBlog(page, 'a note created by playwright3', 'jabs3', 'www.consistency_leads_to_conviction.com', '80')
+
+      const token = await page.evaluate(() => localStorage.getItem('loggedBlogappUser'));
+      console.log('Token:', token);
     })
   
     // test('a blog can be liked', async ({ page }) => {

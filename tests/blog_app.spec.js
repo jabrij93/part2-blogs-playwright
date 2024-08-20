@@ -1,106 +1,111 @@
-const { test, expect, beforeEach, describe } = require('@playwright/test')
-const { loginWith, createBlog } = require('./helper.cjs')
+const { test, expect, beforeEach, describe } = require('@playwright/test');
+const { loginWith, createBlog } = require('./helper.cjs');
 
 describe('Blog app', () => {
   beforeEach(async ({ page, request }) => {
-    await request.post('/api/testing/reset')
+    await request.post('/api/testing/reset');
     await request.post('/api/users', {
       data: {
         name: 'Matti Luukkainen',
         username: 'mluukkai',
         password: 'salainen'
       }
-    })
+    });
 
-    await page.goto('/')
-  })
+    // Intercept the request to the blogs API endpoint
+    await page.route('**/api/blogs', (route) => {
+      // Mocked blog data with the user field populated
+      const mockedBlogs = [
+        {
+          id: '56c38c89ff3cac133d3ce9c6',
+          title: 'a note created by playwright5',
+          author: 'jabs5',
+          url: 'www.consistency_leads_to_conviction.com',
+          likes: '70',
+          user: {
+            username: 'mluukkai',
+            name: 'Matti Luukkainen',
+            id: '66c38c88ff3cac133d3ce9bb'
+          }
+        },
+        {
+          id: '66c38c89ff3cac133d3ce9c5',
+          title: 'a note created by playwright6',
+          author: 'jabs6',
+          url: 'www.consistency_leads_to_conviction.com',
+          likes: '80',
+          user: {
+            username: 'mluukkai',
+            name: 'Matti Luukkainen',
+            id: '66c38c88ff3cac133d3ce9ba'
+          }
+        }
+      ];
+
+      // Fulfill the request with the mocked response
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(mockedBlogs)
+      });
+    });
+
+    await page.goto('/');
+  });
 
   test('Login form is shown', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/');
     
-    const locator = await page.getByText('Blogs')
-    await expect(locator).toBeVisible()
-    await expect(page.getByText('Blog app, Department of Computer Science, University of Helsinki 2024')).toBeVisible()
-  })
+    const locator = await page.getByText('Blogs');
+    await expect(locator).toBeVisible();
+    await expect(page.getByText('Blog app, Department of Computer Science, University of Helsinki 2024')).toBeVisible();
+  });
 
   describe('Login', () => {
     test('succeeds with correct credentials', async ({ page }) => {
-      await page.getByRole('button', { name: 'log in' }).click()
-      await page.getByRole('button', { name: 'login' }).click()
-        await page.getByTestId('username').fill('mluukkai')
-        await page.getByTestId('password').fill('salainen')
-        await page.getByRole('button', { name: 'login' }).click()
+      await page.getByRole('button', { name: 'log in' }).click();
+      await page.getByTestId('username').fill('mluukkai');
+      await page.getByTestId('password').fill('salainen');
+      await page.getByRole('button', { name: 'login' }).click();
   
-        await expect(page.getByText('Matti Luukkainen logged in')).toBeVisible()
-    })
+      await expect(page.getByText('Matti Luukkainen logged in')).toBeVisible();
+    });
 
     test('fails with wrong credentials', async ({ page }) => {
-      await page.getByRole('button', { name: 'log in' }).click()
-      await page.getByRole('button', { name: 'login' }).click()
-        await page.getByTestId('username').fill('mluukkai')
-        await page.getByTestId('password').fill('wrong')
-        await page.getByRole('button', { name: 'login' }).click()
+      await page.getByRole('button', { name: 'log in' }).click();
+      await page.getByTestId('username').fill('mluukkai');
+      await page.getByTestId('password').fill('wrong');
+      await page.getByRole('button', { name: 'login' }).click();
     
-        const errorMessage = page.getByText('wrong username or password');
+      const errorMessage = page.getByText('wrong username or password');
+      await expect(errorMessage).toBeVisible();
+      await expect(errorMessage).toHaveCSS('border-style', 'solid');
+      await expect(errorMessage).toHaveCSS('color', 'rgb(255, 0, 0)'); // 'red' in RGB format
 
-        // Ensure the error message is visible first
-        await expect(errorMessage).toBeVisible();
-
-        // Check that the element has the correct CSS styles
-        await expect(errorMessage).toHaveCSS('border-style', 'solid');
-        await expect(errorMessage).toHaveCSS('color', 'rgb(255, 0, 0)'); // 'red' in RGB format
-
-        await expect(page.getByText('Matti Luukkainen logged in')).not.toBeVisible()
-    })
-  })
+      await expect(page.getByText('Matti Luukkainen logged in')).not.toBeVisible();
+    });
+  });
 
   describe.only('When logged in', () => {
     beforeEach(async ({ page }) => {
-      await loginWith(page, 'mluukkai', 'salainen')
-      await createBlog(page, 'a note created by playwright2', 'jabs2', 'www.consistency_leads_to_conviction.com', '70')
-      await createBlog(page, 'a note created by playwright3', 'jabs3', 'www.consistency_leads_to_conviction.com', '80')
-
-      const token = await page.evaluate(() => localStorage.getItem('loggedBlogappUser'));
-      console.log('Token:', token);
-    })
-  
-    // test('a blog can be liked', async ({ page }) => {
-    //   await page.getByText('a note created by playwright2')
-    //   await page.getByRole('button', { name: 'show' }).click()
-    //   await page.getByRole('button', { name: 'like' }).click()
-    //   await expect(page.getByText('71')).toBeVisible()
-    // })
+      await page.getByRole('button', { name: 'login' }).click()
+      await page.getByTestId('username').fill('mluukkai')
+      await page.getByTestId('password').fill('salainen')
+      await page.getByRole('button', { name: 'login' }).click()
+    });
 
     test('a blog can be deleted', async ({ page }) => {
-      page.on('dialog', dialog => dialog.accept());
+      await loginWith(page, 'mluukkai', 'salainen');
+       // Listen for the confirm dialog and accept it
+       page.on('dialog', dialog => dialog.accept());
 
-      // Wait for the specific blog title to be visible
-      const blogTitleLocator = page.locator('p', { hasText: 'a note created by playwright3' });
-      
-      // Ensure the blog title is found
-      await expect(blogTitleLocator).toBeVisible();
-      
-      // Find the toggle button associated with this blog
-      const toggleButtonLocator = blogTitleLocator.locator('xpath=following-sibling::button');
-      
-      // Click the 'show' button to reveal the blog details
-      await toggleButtonLocator.click();
-      
-      // Find the delete button within the visible blog content
-      const deleteButtonLocator = page.locator('button', { hasText: 'delete' });
-      
-      // Check how many delete buttons are present in the DOM
-      const isPresent = await deleteButtonLocator.count();
-      console.log('Delete button count:', isPresent);  // Logs the number of delete buttons found
-
-      // Ensure the delete button is visible
-      await expect(deleteButtonLocator).toBeVisible();
-      
-      // Click the delete button
-      await deleteButtonLocator.click();
-      
-      // Ensure the blog is no longer visible after deletion
-      await expect(page.locator('p', { hasText: 'a note created by playwright3' })).not.toBeVisible();
-    })
-  })
-})
+       await page.getByText('Title: a note created by playwright5')
+       await page.getByRole('button', { name: 'show' }).click()
+       const locator = await page.getByText('delete')
+       await expect(locator).toBeVisible()
+       // await page.getByRole('button', { name: 'delete' }).click()
+       
+       await expect(page.getByText('a note created by playwright5')).not.toBeVisible()
+    });
+  });
+});

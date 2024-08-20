@@ -87,25 +87,26 @@ describe('Blog app', () => {
   });
 
   describe.only('When logged in', () => {
-    beforeEach(async ({ page }) => {
-      await page.getByRole('button', { name: 'login' }).click()
-      await page.getByTestId('username').fill('mluukkai')
-      await page.getByTestId('password').fill('salainen')
-      await page.getByRole('button', { name: 'login' }).click()
-    });
+    // beforeEach(async ({ page }) => {
+    //   await loginWith(page, 'mluukkai', 'salainen')
+    // });
 
     test('a blog can be deleted', async ({ page }) => {
       await loginWith(page, 'mluukkai', 'salainen');
        // Listen for the confirm dialog and accept it
        page.on('dialog', dialog => dialog.accept());
 
-       await page.getByText('Title: a note created by playwright5')
-       await page.getByRole('button', { name: 'show' }).click()
-       const locator = await page.getByText('delete')
-       await expect(locator).toBeVisible()
-       // await page.getByRole('button', { name: 'delete' }).click()
-       
-       await expect(page.getByText('a note created by playwright5')).not.toBeVisible()
+       const showButtons = page.getByRole('button', { name: 'show' });
+       await showButtons.nth(0).click(); // Clicks the first "show" button
+       // Find the correct "delete" button associated with the first blog
+       const deleteButton = page.locator('div').filter({ hasText: 'a note created by playwright6' }).getByRole('button', { name: 'delete' });
+       await expect(deleteButton).toBeVisible();
+  
+       // Delete the blog
+       await deleteButton.click();
+  
+       // Verify the blog is no longer visible
+       await expect(page.getByText('a note created by playwright6')).not.toBeVisible();
     });
   });
 });
